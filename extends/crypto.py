@@ -1,13 +1,14 @@
 from extends.global_vars import changable_rsa_params
+from extends.global_vars import error_msgs
+from extends.user_inter import error_msg
+
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Hash import SHA512
-from extends.global_vars import error_msgs
-from extends.user_inter import error_msg
+
 
 # @brief Генерация публичного и приватного ключей
 #        для алгоритма RSA.
@@ -18,11 +19,14 @@ from extends.user_inter import error_msg
 #         если операция завершилась успешно,иначе None.
 def gen_rsa(params):
 	try:
-		private_key = RSA.generate(changable_rsa_params['size'], e=changable_rsa_params['e'])
+		private_key = RSA.generate(changable_rsa_params['size'], 
+			e=changable_rsa_params['e'])
+
 		public_key = private_key.publickey()
 	except ValueError:
 		error_msg(error_msgs["bad_rsa_gen"])
 		return None,None
+
 	else:
 		return (bytes(public_key.exportKey('PEM')),
 			bytes(private_key.exportKey('PEM')))
@@ -38,9 +42,11 @@ def gen_signature(data, params):
 	try:
 		signer = PKCS1_v1_5.new(RSA.importKey(params[0]))
 		hash_value = SHA512.new(data)
+
 	except ValueError:
 		error_msg(error_msgs["bad_sign_gen"])
 		return None
+
 	else:
 		return signer.sign(hash_value)
 
@@ -51,7 +57,7 @@ def gen_signature(data, params):
 #
 # @return Сессионный ключ, если операция завершилась успешно,
 #         иначе None.
-def gen_eas(params=[]):
+def gen_aes(params=[]):
 	try:
 		session_key = Random.new().read(32)
 	except:
@@ -67,7 +73,7 @@ def gen_eas(params=[]):
 #
 # @return Зашифрованные данные, если операция завершилась успешно,
 #         иначе None.
-def encrypt_eas(data, params):
+def encrypt_aes(data, params):
 	try:
 		iv = Random.new().read(16)
 		obj = AES.new(params[0], AES.MODE_CFB, iv)
@@ -85,7 +91,7 @@ def encrypt_eas(data, params):
 #
 # @return Расшифрованные данные, если операция завершилась успешно,
 #         иначе None.
-def decrypt_eas(data, params):
+def decrypt_aes(data, params):
 	try:
 		iv = data[:16]
 		obj = AES.new(params[0], AES.MODE_CFB, iv)
@@ -139,7 +145,7 @@ def decrypt_rsa(data, params):
 #
 # @return True, если цифровая подпись подлинная,
 #         иначе False.
-def verify_sifnature(signature, params, data):
+def verify_signature(signature, params, data):
 	hash_value = SHA512.new(data)
 	verifier = PKCS1_v1_5.new(RSA.importKey(params[0]))
 	stat = verifier.verify(hash_value, signature)

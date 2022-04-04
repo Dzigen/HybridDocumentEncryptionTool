@@ -132,14 +132,14 @@ while True:
 			continue
 
 		print("Генерация сессионного ключа алгоритмом AES")
-		session_key = gen_eas()
+		session_key = gen_aes()
 		print("Готово.", end="\n\n")
 		
 		if session_key is None:
 			continue
 
 		print("Шифрование исходного набора данных при помощи AES")
-		encrypted_data = encrypt_eas(data,[session_key])
+		encrypted_data = encrypt_aes(data,[session_key])
 		print("Готово.", end="\n\n")
 		
 		if encrypted_data is None:
@@ -273,14 +273,14 @@ while True:
 			continue
 
 		print("Расшифровываем данные с помощью сессионного ключа AES.")
-		decd_data = decrypt_eas(encd_data, [decd_session_key])
+		decd_data = decrypt_aes(encd_data, [decd_session_key])
 		print("Готово.", end="\n\n")
 
 		if decd_data is None:
 			continue
 
 		print("Веривицируем цифровую подпись.")
-		ver_stat = verify_sifnature(signature, [snd_pub_key], decd_data)
+		ver_stat = verify_signature(signature, [snd_pub_key], decd_data)
 		print("Готово.", end="\n\n")
 
 		if not ver_stat:
