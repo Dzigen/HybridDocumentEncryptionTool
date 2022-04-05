@@ -1,5 +1,6 @@
-./decryption/
-./encryption/
-./results/
-./rsa_keys/
-./extends/__pycache__/
+#Working folders
+decryption/
+encryption/
+results/
+rsa_keys/
+extends/__pycache__/
