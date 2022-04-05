@@ -3,9 +3,11 @@ from extends.global_vars import warning_msgs, \
 								spec_msgs, \
 								RSA_E_PARAM_DEFAULT, \
 								RSA_KEYS_BIT_SIZE_DEFAULT, \
-								changable_rsa_params
+								changable_rsa_params, \
+								eas_key_size
 
 import os
+import re
 
 # @brief Создание имени нового каталога для конкретной директории файлов
 #
@@ -110,6 +112,27 @@ def set_settings():
 			break
 		else:
 			warning_msg([""])
+
+# @brief Получение пароля от приватного ключа RSA
+#
+# @param msgs Сообщения для вывода при определённых ситуациях.
+#
+# @return Пароль, переведённый в байты
+def get_pswd_for_priv_k(msgs):
+	paswd=b""
+	while True:
+		try:
+			paswd = input(msgs[0] + ">> ")
+			if len(paswd) > eas_key_size or not re.search(" ", paswd) is None:
+				raise ValueError
+			break
+		except ValueError:
+			warning_msg(msgs[1])
+
+	paswd += " "*(eas_key_size - len(paswd))
+	print(len(paswd))
+	return paswd.encode(encoding="utf-8")
+
 
 # @brief Вывод сообщения об ошибке.
 #

@@ -1,5 +1,4 @@
-from extends.global_vars import changable_rsa_params
-from extends.global_vars import error_msgs
+from extends.global_vars import changable_rsa_params, error_msgs, iv_size, eas_key_size
 from extends.user_inter import error_msg
 
 from Crypto.Cipher import PKCS1_OAEP
@@ -75,7 +74,7 @@ def gen_aes(params=[]):
 #         иначе None.
 def encrypt_aes(data, params):
 	try:
-		iv = Random.new().read(16)
+		iv = Random.new().read(iv_size)
 		obj = AES.new(params[0], AES.MODE_CFB, iv)
 		encrypted_data = iv + obj.encrypt(data)
 	except ValueError:
@@ -93,10 +92,10 @@ def encrypt_aes(data, params):
 #         иначе None.
 def decrypt_aes(data, params):
 	try:
-		iv = data[:16]
+		iv = data[:iv_size]
 		obj = AES.new(params[0], AES.MODE_CFB, iv)
 		decrypted_data = obj.decrypt(data)
-		decrypted_data = decrypted_data[16:]
+		decrypted_data = decrypted_data[iv_size:]
 	except ValueError:
 		error_msg(error_msgs["bad_dec"])
 		return None
@@ -156,3 +155,22 @@ def verify_signature(signature, params, data):
 		print("Цифровая подпись недействительна.")
 
 	return stat
+
+# @brief Проверка пароля и дешифрация приватного ключа RSA.
+#
+# @param Пароль, введённый пользоватлеем.
+# @param Зашифрованный приватный ключ.
+#
+# @return Расшифрованный приватный ключ, если введённый пароль верен,
+#         инчае None.
+def decrypt_privat_key(passwd, encrypted_priv_key):
+	decrypted_pass = decrypt_aes(
+		encrypted_priv_key[: (iv_size + eas_key_size)],[passwd])
+
+	if not decrypted_pass == passwd:
+		error_msg(error_msgs["inv_pass"])
+		return None
+	decrypted_pri_k = decrypt_aes(
+		encrypted_priv_key,[passwd])[eas_key_size:]
+	
+	return decrypted_pri_k

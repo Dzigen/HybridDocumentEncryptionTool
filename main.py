@@ -5,9 +5,6 @@ from extends.user_inter import *
 import os
 import stat
 
-if not os.getuid() == 0:
-	error_msg(error_msgs['bad_uid'])
-	exit()
 
 while True:
 	changable_rsa_params = dict()
@@ -43,6 +40,12 @@ while True:
 		if pub_k is None or priv_k is None:
 			continue
 
+		print("Шифруем приватный ключ RSA.")
+		passwd = get_pswd_for_priv_k([ spec_msgs["crt_psw_priv_k"], warning_msgs["bad_passw"]])
+		encrypted_priv_k = encrypt_aes(passwd + priv_k,[passwd])
+		passwd = b""
+		print("Готово.")
+
 		#=======
 
 		print("Создаём директорию для сохранения ключей RSA")
@@ -54,14 +57,11 @@ while True:
 
 		print("Сохраняем ключи RSA в созданный каталог.")
 		rtn = save_file(rsa_dir_path + "/" + file_names["pub_k"], pub_k, error_msgs["ct_sve"])
-		rtn2 = save_file(rsa_dir_path + "/" + file_names["pri_k"], priv_k, error_msgs["ct_sve"])
+		rtn2 = save_file(rsa_dir_path + "/" + file_names["pri_k"], encrypted_priv_k, error_msgs["ct_sve"])
 		print("Готово.", end="\n\n")
 
 		if not rtn or not rtn2:
 			continue 
-
-		os.chmod(rsa_dir_path + "/" + file_names["pri_k"], stat.S_IRUSR)
-		
 
 	# Шифрование данных
 	elif cmd == avail_cmds[2]:
@@ -108,6 +108,15 @@ while True:
 		if rsa_pub_key is None or rsa_priv_key is None:
 			continue
 
+		print("Дешифруем приватный ключ RSA.")
+		passwd = get_pswd_for_priv_k([ spec_msgs["ins_pasw_priv_k"], warning_msgs["bad_passw"]])
+		decrypted_rsa_priv_k = decrypt_privat_key(passwd, rsa_priv_key)
+		passwd = b""
+		print("Готово.")
+
+		if decrypted_rsa_priv_k is None:
+			continue
+
 		print("Чтение данных для шифрования")
 		data = read_file(enc_dir_path + "/" + file_names["data_en"], [error_msgs["dir_load"]])
 		print("Готово.", end="\n\n")
@@ -125,7 +134,7 @@ while True:
 		#=======
 		
 		print("Генерация цифровой подписи данных для шифрования")
-		signature = gen_signature(data, [rsa_priv_key])
+		signature = gen_signature(data, [decrypted_rsa_priv_k])
 		print("Готово.", end="\n\n")
 
 		if signature is None:
@@ -235,6 +244,16 @@ while True:
 		if rsa_pub_key is None or rsa_priv_key is None:
 			continue
 
+		print("Дешифруем приватный ключ RSA.")
+		passwd = get_pswd_for_priv_k([ spec_msgs["ins_pasw_priv_k"], warning_msgs["bad_passw"]])
+		decrypted_rsa_priv_k = decrypt_privat_key(passwd, rsa_priv_key)
+		passwd = b""
+		print("Готово.")
+
+		if decrypted_rsa_priv_k is None:
+			continue
+
+
 		print("Чтение данных для расшифрования")
 		encd_data = read_file(dec_dir_path + "/" + file_names["data_dec"], [error_msgs["dir_load"]])
 		print("Готово.", end="\n\n")
@@ -266,7 +285,7 @@ while True:
 		#=======
 
 		print("Расшифровываем сессионный ключ с помощью RSA.")
-		decd_session_key = decrypt_rsa(encd_session_key, [rsa_priv_key])  
+		decd_session_key = decrypt_rsa(encd_session_key, [decrypted_rsa_priv_k])  
 		print("Готово.", end="\n\n")
 
 		if decd_session_key is None:
