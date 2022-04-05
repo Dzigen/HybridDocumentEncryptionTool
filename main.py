@@ -5,7 +5,6 @@ from extends.user_inter import *
 import os
 import stat
 
-
 while True:
 	changable_rsa_params = dict()
 	cmd = input("Введите команду >> ")
