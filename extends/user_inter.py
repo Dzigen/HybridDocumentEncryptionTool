@@ -130,7 +130,7 @@ def get_pswd_for_priv_k(msgs):
 			warning_msg(msgs[1])
 
 	paswd += " "*(eas_key_size - len(paswd))
-	print(len(paswd))
+	
 	return paswd.encode(encoding="utf-8")
 
 

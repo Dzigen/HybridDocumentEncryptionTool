@@ -5,6 +5,7 @@ changable_rsa_params = dict()
 
 eas_key_size = 16
 iv_size = 16
+session_key_size =32
 
 dirs = {
 	"keys": "rsa_keys", \

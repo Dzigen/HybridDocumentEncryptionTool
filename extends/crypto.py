@@ -1,4 +1,5 @@
-from extends.global_vars import changable_rsa_params, error_msgs, iv_size, eas_key_size
+from extends.global_vars import changable_rsa_params, error_msgs, \
+								iv_size, eas_key_size, session_key_size 
 from extends.user_inter import error_msg
 
 from Crypto.Cipher import PKCS1_OAEP
@@ -58,7 +59,7 @@ def gen_signature(data, params):
 #         иначе None.
 def gen_aes(params=[]):
 	try:
-		session_key = Random.new().read(32)
+		session_key = Random.new().read(session_key_size)
 	except:
 		error_msg(error_msgs["bad_aes_gen"])
 		return None
